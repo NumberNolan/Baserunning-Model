@@ -1,0 +1,14 @@
+# Data / outputs (regenerate via pipeline; don't commit large pulls)
+*.csv
+*.rds
+statcast_raw_all*
+bsr_results*
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# OS
+.DS_Store
