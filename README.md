@@ -24,13 +24,16 @@ built on Statcast batted-ball data (exit velocity, launch angle, spray angle).
    to MLBAM player IDs via `chadwick_player_lu()`. `SB × 0.2 + CS × -0.45`.
 
 `Total_BsR = BAE_AE + RAE_AE + SBCS_value`, aggregated by `(batter, season)`.
+Player names are attached in the same pipeline (via the same
+`chadwick_player_lu()` lookup used for the FanGraphs ID mapping) — there's no
+separate name-join script.
 
 ## Pipeline
 
 ```r
 raw_all <- pull_statcast_range("2021-04-01", "2025-09-28")  # or load cached
 bsr <- run_baserunning_pipeline(raw_all, fg_sbcs_years = 2021:2025)
-write.csv(bsr, "bsr_results.csv", row.names = FALSE)
+write.csv(bsr, "analysis/bsr_results.csv", row.names = FALSE)
 ```
 
 See `R/baserunning_model.R` for all pipeline functions.
@@ -88,13 +91,15 @@ against a logit baseline in this repo — worth an A/B if revisited.
 
 ```
 R/
-  baserunning_model.R   # core pipeline: data pull, both XGBoost models, SBCS, join
+  baserunning_model.R    # core pipeline: data pull, both XGBoost models, SBCS,
+                          # name join, and final (batter, season) aggregation
 analysis/
-  add_names.R            # attach player names via Chadwick lookup
-  compare_fg_bsr.R        # R² / correlation vs FanGraphs' own BsR
-  yoy_stability.R          # year-over-year correlation by BIP threshold
+  compare_fg_bsr.R       # R² / correlation vs FanGraphs' own BsR
+  yoy_stability.R        # year-over-year correlation by BIP threshold
+  bsr_results.csv        # latest pipeline output (2021-2025, named)
 ```
 
 ## Requirements
 
 R packages: `baseballr`, `dplyr`, `purrr`, `xgboost`, `tidyr`, `readr`.
+
