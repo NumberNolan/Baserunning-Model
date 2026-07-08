@@ -25,8 +25,7 @@ built on Statcast batted-ball data (exit velocity, launch angle, spray angle).
 
 `Total_BsR = BAE_AE + RAE_AE + SBCS_value`, aggregated by `(batter, season)`.
 Player names are attached in the same pipeline (via the same
-`chadwick_player_lu()` lookup used for the FanGraphs ID mapping) — there's no
-separate name-join script.
+`chadwick_player_lu()` lookup used for the FanGraphs ID mapping).
 
 ## Pipeline
 
@@ -40,27 +39,13 @@ See `R/baserunning_model.R` for all pipeline functions.
 
 ## Modeling notes
 
-- **XGBoost (`multi:softprob`)**, not multinomial logit — see rationale below.
+- **XGBoost (`multi:softprob`)**
 - Both classifiers use a 15% holdout for early stopping, then fit **per-class
   Platt scaling** on that same holdout to correct softmax overconfidence
   before computing expected run values.
-- Runner post-play state (which base a runner ended up on, or whether they
-  scored) isn't directly available from `baseballr::statcast_search()` — it's
-  reconstructed from the *next pitch row* in the same game (`add_post_state()`),
-  since Statcast is pitch-level and the first pitch of the next plate
-  appearance carries the resulting on-base state. A `same_half` flag guards
-  against using this lookahead across a half-inning boundary.
-- Park effects included as a fixed 30-team one-hot block (`home_team`), not a
-  separate park-factor table, so both models can learn park-specific outcome
-  distributions directly.
+- Park effects included as a fixed 30-team one-hot block (`home_team`)
 
-### Why XGBoost over multinomial logit
-Low feature dimensionality (3-4 numeric + one-hot park/base) argued for logit,
-but spray angle's relationship to outcome is non-monotonic in ways that would
-need manual interaction terms in a linear model. Not rigorously validated
-against a logit baseline in this repo — worth an A/B if revisited.
-
-## Known limitations (unresolved as of this version)
+## Known limitations
 
 - **Flat run values ignore base-out state.** A single that scores a runner
   from second is worth more than a single with the bases empty; this model
